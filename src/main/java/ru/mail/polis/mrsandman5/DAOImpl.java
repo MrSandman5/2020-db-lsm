@@ -12,7 +12,7 @@ import java.util.TreeMap;
 
 public class DAOImpl implements DAO {
 
-    SortedMap<ByteBuffer, Record> data = new TreeMap<>();
+    private final SortedMap<ByteBuffer, Record> data = new TreeMap<>();
 
     @NotNull
     @Override
