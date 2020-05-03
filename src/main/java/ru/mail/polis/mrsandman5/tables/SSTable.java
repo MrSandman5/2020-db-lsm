@@ -47,14 +47,15 @@ public final class SSTable implements Table {
     }
 
     /**
-     * Writes to disk memory table
+     * Writes to disk memory table.
      *
      * @param cells iterator to walk through cells
      * @param file that represents table
      * @throws IOException if cannot open or read file
      */
     public static void write(final Iterator<Cell> cells, @NotNull final File file) throws IOException {
-        try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+        try (FileChannel fc = FileChannel.open(file.toPath(),
+                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
             final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
             while (cells.hasNext()) {

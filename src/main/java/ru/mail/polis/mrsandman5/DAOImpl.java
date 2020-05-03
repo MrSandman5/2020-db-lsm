@@ -16,11 +16,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 public class DAOImpl implements DAO {
@@ -33,7 +33,7 @@ public class DAOImpl implements DAO {
     private final long flushThreshold;
     private final MemTable memTable;
     private final NavigableMap<Integer, SSTable> ssTables;
-    private int generation = 0;
+    private int generation;
 
     /**
      * Creates persistent DAO.
