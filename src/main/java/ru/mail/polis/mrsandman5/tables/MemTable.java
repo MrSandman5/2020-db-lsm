@@ -57,4 +57,8 @@ public final class MemTable implements Table {
         sizeInBytes = 0;
         map.clear();
     }
+
+    public int getEntryCount() {
+        return map.size();
+    }
 }

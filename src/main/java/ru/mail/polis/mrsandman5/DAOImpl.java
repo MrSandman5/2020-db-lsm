@@ -8,7 +8,6 @@ import ru.mail.polis.Record;
 import ru.mail.polis.mrsandman5.models.Cell;
 import ru.mail.polis.mrsandman5.tables.MemTable;
 import ru.mail.polis.mrsandman5.tables.SSTable;
-import ru.mail.polis.mrsandman5.tables.Table;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +26,8 @@ public class DAOImpl implements DAO {
     @NotNull
     private final File storage;
     private final long flushThreshold;
-    private final Table memTable;
-    private final NavigableMap<Integer, Table> ssTables;
+    private final MemTable memTable;
+    private final NavigableMap<Integer, SSTable> ssTables;
     private int generation = 0;
 
     public DAOImpl(@NotNull final File storage, final long flushThreshold) throws IOException {
@@ -49,7 +48,6 @@ public class DAOImpl implements DAO {
                         }
                     });
         }
-        generation++;
     }
 
     @NotNull
@@ -82,7 +80,7 @@ public class DAOImpl implements DAO {
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
         memTable.upsert(key, value);
-        if (memTable.sizeInBytes() > flushThreshold){
+        if (memTable.sizeInBytes() >= flushThreshold){
             flush();
         }
     }
@@ -90,14 +88,16 @@ public class DAOImpl implements DAO {
     @Override
     public void remove(@NotNull final ByteBuffer key) throws IOException {
         memTable.remove(key);
-        if (memTable.sizeInBytes() > flushThreshold){
+        if (memTable.sizeInBytes() >= flushThreshold){
             flush();
         }
     }
 
     @Override
     public void close() throws IOException {
-        flush();
+        if (memTable.getEntryCount() > 0) {
+            flush();
+        }
     }
 
     private void flush() throws IOException {
@@ -105,8 +105,8 @@ public class DAOImpl implements DAO {
         SSTable.write(memTable.iterator(ByteBuffer.allocate(0)), temp);
         final File file = new File(storage, generation + SUFFIX);
         Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
-        memTable.clear();
         ssTables.put(generation, new SSTable(file));
         generation++;
+        memTable.clear();
     }
 }

@@ -7,8 +7,8 @@ import ru.mail.polis.mrsandman5.models.Value;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ public final class SSTable implements Table{
 
     public SSTable(@NotNull final File file) throws IOException {
         final long fileSize = file.length();
-        final ByteBuffer mapped;
+        assert fileSize <= Integer.MAX_VALUE;
+        final MappedByteBuffer mapped;
         try(FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
-            assert fileSize <= Integer.MAX_VALUE;
-            mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fc.size()).order(ByteOrder.BIG_ENDIAN);
+            mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fc.size());
         }
 
         rows = mapped.getInt((int) (fileSize - Integer.BYTES));
