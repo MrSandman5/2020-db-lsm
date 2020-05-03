@@ -24,18 +24,16 @@ public final class MemTable implements Table {
     @Override
     public Iterator<Cell> iterator(@NotNull final ByteBuffer from) throws IOException {
         return Iterators.transform(
-                map.tailMap(from).entrySet().iterator(), e ->{
-                    assert (e != null);
-                    return new Cell(e.getKey(), e.getValue());
-                });
+                map.tailMap(from).entrySet().iterator(),
+                e -> new Cell(e.getKey(), e.getValue()));
     }
 
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
         final Value prev = map.put(key, Value.of(value));
-        if (prev == null){
+        if (prev == null) {
             sizeInBytes += key.remaining() + value.remaining();
-        } else if (prev.isTombstone()){
+        } else if (prev.isTombstone()) {
             sizeInBytes += value.remaining();
         } else {
             sizeInBytes += value.remaining() - prev.getData().remaining();

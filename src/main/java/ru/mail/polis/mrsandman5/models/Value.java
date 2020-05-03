@@ -1,7 +1,6 @@
 package ru.mail.polis.mrsandman5.models;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
@@ -12,14 +11,23 @@ public final class Value implements Comparable<Value> {
     @NotNull
     private final Optional<ByteBuffer> data;
 
+    /**
+     * Creates value from Bytebuffer.
+     *
+     * @param timestamp that represents time of creation
+     * @param data buffer to get data to value
+     */
     public Value(final long timestamp, @NotNull final ByteBuffer data) {
-        assert (timestamp > 0L);
         this.timestamp = timestamp;
         this.data = Optional.of(data);
     }
 
+    /**
+     * Creates empty value.
+     *
+     * @param timestamp that represents time of creation
+     */
     public Value(final long timestamp) {
-        assert (timestamp > 0L);
         this.timestamp = timestamp;
         this.data = Optional.empty();
     }
@@ -37,12 +45,11 @@ public final class Value implements Comparable<Value> {
     }
 
     public ByteBuffer getData() {
-        assert (!isTombstone());
         return data.orElseThrow().asReadOnlyBuffer();
     }
 
     @Override
-    public int compareTo(@NotNull Value o) {
+    public int compareTo(@NotNull final Value o) {
         return -Long.compare(timestamp, o.timestamp);
     }
 

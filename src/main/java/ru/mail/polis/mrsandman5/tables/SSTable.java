@@ -15,16 +15,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public final class SSTable implements Table{
+public final class SSTable implements Table {
     private final int rows;
     private final IntBuffer offsets;
     private final ByteBuffer cells;
 
+    /**
+     * Creates disk memory table.
+     *
+     * @param file that represents table
+     * @throws IOException if cannot open or read file
+     */
     public SSTable(@NotNull final File file) throws IOException {
         final long fileSize = file.length();
         assert fileSize <= Integer.MAX_VALUE;
         final MappedByteBuffer mapped;
-        try(FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
+        try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
             mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fc.size());
         }
 
@@ -40,11 +46,18 @@ public final class SSTable implements Table{
         this.cells = cellBuffer.slice();
     }
 
-    public static void write(final Iterator<Cell> cells, @NotNull final File file) throws IOException{
-        try(FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+    /**
+     * Writes to disk memory table
+     *
+     * @param cells iterator to walk through cells
+     * @param file that represents table
+     * @throws IOException if cannot open or read file
+     */
+    public static void write(final Iterator<Cell> cells, @NotNull final File file) throws IOException {
+        try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
             final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
-            while (cells.hasNext()){
+            while (cells.hasNext()) {
                 offsets.add(offset);
 
                 final Cell cell = cells.next();
@@ -57,7 +70,7 @@ public final class SSTable implements Table{
                 offset += keySize;
 
                 final Value value = cell.getValue();
-                if (value.isTombstone()){
+                if (value.isTombstone()) {
                     fc.write(fromLong(-cell.getValue().getTimestamp()));
                 } else {
                     fc.write(fromLong(cell.getValue().getTimestamp()));
@@ -82,8 +95,7 @@ public final class SSTable implements Table{
         }
     }
 
-    private ByteBuffer keyAt(final int i){
-        assert (0 <= i && i < rows);
+    private ByteBuffer keyAt(final int i) {
         final int offset = offsets.get(i);
         final int keySize = cells.getInt(offset);
         final ByteBuffer key = cells.duplicate();
@@ -93,7 +105,6 @@ public final class SSTable implements Table{
     }
 
     private Cell cellAt(final int i) {
-        assert (0 <= i && i < rows);
         int offset = offsets.get(i);
 
         final int keySize = cells.getInt(offset);
@@ -161,10 +172,14 @@ public final class SSTable implements Table{
     }
 
     @Override
-    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException { }
+    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
-    public void remove(@NotNull final ByteBuffer key) throws IOException { }
+    public void remove(@NotNull final ByteBuffer key) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void clear() {
