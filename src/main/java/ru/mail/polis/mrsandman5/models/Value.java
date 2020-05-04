@@ -3,13 +3,12 @@ package ru.mail.polis.mrsandman5.models;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 public class Value {
 
     private final long timestamp;
     @NotNull
-    private final Optional<ByteBuffer> data;
+    private final ByteBuffer data;
 
     /**
      * Creates value from Bytebuffer.
@@ -19,7 +18,7 @@ public class Value {
      */
     public Value(final long timestamp, @NotNull final ByteBuffer data) {
         this.timestamp = timestamp;
-        this.data = Optional.of(data);
+        this.data = data;
     }
 
     /**
@@ -29,7 +28,7 @@ public class Value {
      */
     public Value(final long timestamp) {
         this.timestamp = timestamp;
-        this.data = Optional.empty();
+        this.data = null;
     }
 
     public static Value of(final ByteBuffer data) {
@@ -37,11 +36,11 @@ public class Value {
     }
 
     public boolean isTombstone() {
-        return data.isEmpty();
+        return data == null;
     }
 
     public ByteBuffer getData() {
-        return data.orElseThrow().asReadOnlyBuffer();
+        return data;
     }
 
     public long getTimestamp() {

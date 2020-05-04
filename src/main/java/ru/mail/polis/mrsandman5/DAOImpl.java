@@ -16,7 +16,13 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.Objects;
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class DAOImpl implements DAO {
@@ -42,8 +48,12 @@ public class DAOImpl implements DAO {
         this.flushThreshold = flushThreshold;
         this.memTable = new MemTable();
         this.generation = -1;
-        try (Stream<Path> stream = Files.list(storage.toPath())) {
-            stream.filter(path -> path.getFileName().toString().endsWith(SUFFIX))
+        try (Stream<Path> stream = Files.walk(storage.toPath(), 1)) {
+            stream.filter(path -> {
+                final String name = path.getFileName().toString();
+                return name.endsWith(SUFFIX)
+                        && !path.toFile().isDirectory()
+                        && !name.substring(0, name.indexOf(SUFFIX)).matches("[a-zA-Z]+");})
                     .forEach(path -> {
                         try {
                             final String name = path.getFileName().toString();
@@ -60,7 +70,7 @@ public class DAOImpl implements DAO {
 
     @NotNull
     @Override
-    public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
+    public Iterator<Record> iterator(@NotNull final ByteBuffer from){
         final List<Iterator<Cell>> fileIterators = new ArrayList<>(ssTables.size() + 1);
         fileIterators.add(memTable.iterator(from));
         ssTables.descendingMap().values().forEach(v -> {

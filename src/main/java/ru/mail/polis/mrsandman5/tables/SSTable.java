@@ -42,7 +42,7 @@ public final class SSTable implements Table {
      * @param file that represents table
      * @throws IOException if cannot open or read channel
      */
-    public static void write(final Iterator<Cell> cells, @NotNull final File file) throws IOException {
+    public static void write(final Iterator<Cell> cells, final File file) throws IOException {
         try (FileChannel fc = new FileOutputStream(file).getChannel()) {
             final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
@@ -101,8 +101,8 @@ public final class SSTable implements Table {
             } else {
                 offset += Long.BYTES;
                 final int dataSize;
-                if (i == this.count - 1) {
-                    dataSize = this.rows - offset;
+                if (i == count - 1) {
+                    dataSize = rows - offset;
                 } else {
                     dataSize = getOffset(i + 1) - offset;
                 }
@@ -150,7 +150,7 @@ public final class SSTable implements Table {
             int next = getPosition(from);
             @Override
             public boolean hasNext() {
-                return next < rows;
+                return next < count;
             }
 
             @Override
@@ -162,12 +162,12 @@ public final class SSTable implements Table {
     }
 
     @Override
-    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
+    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void remove(@NotNull final ByteBuffer key) throws IOException {
+    public void remove(@NotNull final ByteBuffer key) {
         throw new UnsupportedOperationException();
     }
 

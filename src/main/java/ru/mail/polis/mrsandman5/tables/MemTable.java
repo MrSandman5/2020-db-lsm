@@ -5,17 +5,17 @@ import org.jetbrains.annotations.NotNull;
 import ru.mail.polis.mrsandman5.models.Cell;
 import ru.mail.polis.mrsandman5.models.Value;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.SortedMap;
+import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class MemTable implements Table {
-    private final SortedMap<ByteBuffer, Value> map = new TreeMap<>();
+    private final NavigableMap<ByteBuffer, Value> map = new TreeMap<>();
     private long sizeInBytes;
 
-    public MemTable(){
+    public MemTable() {
         sizeInBytes = 0;
     }
 
@@ -26,10 +26,10 @@ public class MemTable implements Table {
 
     @NotNull
     @Override
-    public Iterator<Cell> iterator(@NotNull final ByteBuffer from) throws IOException {
+    public Iterator<Cell> iterator(@NotNull final ByteBuffer from){
         return Iterators.transform(
                 map.tailMap(from).entrySet().iterator(),
-                e -> new Cell(e.getKey(), e.getValue()));
+                e -> new Cell(Objects.requireNonNull(e).getKey(), e.getValue()));
     }
 
     @Override
