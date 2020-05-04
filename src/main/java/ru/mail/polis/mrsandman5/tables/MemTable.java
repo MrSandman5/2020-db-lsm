@@ -26,7 +26,7 @@ public class MemTable implements Table {
 
     @NotNull
     @Override
-    public Iterator<Cell> iterator(@NotNull final ByteBuffer from){
+    public Iterator<Cell> iterator(@NotNull final ByteBuffer from) {
         return Iterators.transform(
                 map.tailMap(from).entrySet().iterator(),
                 e -> new Cell(Objects.requireNonNull(e).getKey(), e.getValue()));

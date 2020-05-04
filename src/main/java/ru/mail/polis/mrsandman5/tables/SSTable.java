@@ -171,6 +171,9 @@ public final class SSTable implements Table {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Closes table FileChannel.
+     */
     public void close() {
         try {
             fileChannel.close();
