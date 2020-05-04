@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
-public final class Value implements Comparable<Value> {
+public class Value {
 
     private final long timestamp;
     @NotNull
@@ -36,21 +36,12 @@ public final class Value implements Comparable<Value> {
         return new Value(System.currentTimeMillis(), data.duplicate());
     }
 
-    public static Value tombstone() {
-        return new Value(System.currentTimeMillis());
-    }
-
     public boolean isTombstone() {
         return data.isEmpty();
     }
 
     public ByteBuffer getData() {
         return data.orElseThrow().asReadOnlyBuffer();
-    }
-
-    @Override
-    public int compareTo(@NotNull final Value o) {
-        return -Long.compare(timestamp, o.timestamp);
     }
 
     public long getTimestamp() {

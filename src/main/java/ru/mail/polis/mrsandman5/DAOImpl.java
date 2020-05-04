@@ -16,11 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class DAOImpl implements DAO {
@@ -31,8 +27,8 @@ public class DAOImpl implements DAO {
     @NotNull
     private final File storage;
     private final long flushThreshold;
-    private final MemTable memTable;
-    private final NavigableMap<Integer, SSTable> ssTables;
+    private MemTable memTable;
+    private final NavigableMap<Integer, SSTable> ssTables = new TreeMap<>();
     private int generation;
 
     /**
@@ -45,8 +41,8 @@ public class DAOImpl implements DAO {
         this.storage = storage;
         this.flushThreshold = flushThreshold;
         this.memTable = new MemTable();
-        this.ssTables = new TreeMap<>();
-        try (Stream<Path> stream = Files.walk(storage.toPath(), 1)) {
+        this.generation = -1;
+        try (Stream<Path> stream = Files.list(storage.toPath())) {
             stream.filter(path -> path.getFileName().toString().endsWith(SUFFIX))
                     .forEach(path -> {
                         try {
@@ -59,6 +55,7 @@ public class DAOImpl implements DAO {
                         }
                     });
         }
+        generation++;
     }
 
     @NotNull
@@ -74,12 +71,12 @@ public class DAOImpl implements DAO {
             }
         });
 
-        final Iterator<Cell> cells = Iterators.mergeSorted(fileIterators, Cell.COMPARATOR);
+        final Iterator<Cell> cells = Iterators.mergeSorted(fileIterators, Comparator.naturalOrder());
         final Iterator<Cell> fresh = Iters.collapseEquals(cells, Cell::getKey);
         final Iterator<Cell> alive = Iterators.filter(
-                fresh, cell -> !cell.getValue().isTombstone());
+                fresh, cell -> !Objects.requireNonNull(cell).getValue().isTombstone());
         return Iterators.transform(
-                alive, cell -> Record.of(cell.getKey(), cell.getValue().getData()));
+                alive, cell -> Record.of(Objects.requireNonNull(cell).getKey(), cell.getValue().getData()));
     }
 
     @Override
@@ -103,6 +100,7 @@ public class DAOImpl implements DAO {
         if (memTable.getEntryCount() > 0) {
             flush();
         }
+        ssTables.values().forEach(SSTable::close);
     }
 
     private void flush() throws IOException {
@@ -110,8 +108,8 @@ public class DAOImpl implements DAO {
         SSTable.write(memTable.iterator(ByteBuffer.allocate(0)), temp);
         final File file = new File(storage, generation + SUFFIX);
         Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
+        memTable = new MemTable();
         ssTables.put(generation, new SSTable(file));
         generation++;
-        memTable.clear();
     }
 }
