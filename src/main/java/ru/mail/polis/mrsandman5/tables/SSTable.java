@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ public final class SSTable implements Table {
     private final int rows;
     private final int count;
     private final FileChannel fileChannel;
+    private final File file;
 
     /**
      * Creates disk memory table.
@@ -27,7 +29,8 @@ public final class SSTable implements Table {
      * @throws IOException if cannot open or read channel
      */
     public SSTable(@NotNull final File file) throws IOException {
-        fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+        this.file = file;
+        fileChannel = FileChannel.open(this.file.toPath(), StandardOpenOption.READ);
         final int fileSize = (int) fileChannel.size() - Integer.BYTES;
         final ByteBuffer cellCount = ByteBuffer.allocate(Integer.BYTES);
         fileChannel.read(cellCount, fileSize);
@@ -180,6 +183,10 @@ public final class SSTable implements Table {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public void deleteSSTableFile() throws IOException {
+        Files.delete(file.toPath());
     }
 
     private static ByteBuffer fromInt(final int value) {

@@ -39,6 +39,7 @@ public class Value {
         return data == null;
     }
 
+    @NotNull
     public ByteBuffer getData() {
         return data;
     }
