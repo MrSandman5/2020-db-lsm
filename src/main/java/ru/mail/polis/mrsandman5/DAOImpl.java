@@ -16,7 +16,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class DAOImpl implements DAO {
@@ -64,11 +71,17 @@ public class DAOImpl implements DAO {
 
     @NotNull
     @Override
-    public Iterator<Record> iterator(@NotNull final ByteBuffer from){
+    public Iterator<Record> iterator(@NotNull final ByteBuffer from) {
         return Iterators.transform(cellIterator(from),
                 cell -> Record.of(Objects.requireNonNull(cell).getKey(), cell.getValue().getData()));
     }
 
+    /**
+     * Create an iterator over alive {@link Cell}.
+     *
+     * @param from data on which iterator is created
+     * @return an iterator over alive cells
+     */
     @NotNull
     public Iterator<Cell> cellIterator(@NotNull final ByteBuffer from) {
         final List<Iterator<Cell>> fileIterators = new ArrayList<>(ssTables.size() + 1);
