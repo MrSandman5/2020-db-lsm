@@ -144,11 +144,11 @@ public class DAOImpl implements DAO {
             ssTableEntry.getValue().deleteSSTableFile();
         }
         ssTables.clear();
-
+        generation = 0;
         final File file = new File(storage, generation + SUFFIX);
         Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
         ssTables.put(generation, new SSTable(file));
-
-        generation = ssTables.size() + 1;
+        memTable = new MemTable();
+        generation++;
     }
 }
